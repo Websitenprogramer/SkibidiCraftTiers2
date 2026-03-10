@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SkibidiTiers</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0b09;--bg2:#131109;--bg3:#1a170f;--bg4:#221e13;
+  --border:#2e2818;--border2:rgba(255,200,0,.12);
+  --text:#ede8da;--muted:#6b6047;
+  --gold:#ffc400;--gold2:#e6a800;--gold3:#a87700;
+  --red:#e84040;--green:#22c55e;--purple:#9d50ff;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;display:flex;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 55% 35% at 8% 5%,rgba(255,196,0,.06) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 92% 90%,rgba(255,140,0,.04) 0%,transparent 55%);pointer-events:none;z-index:0;}
+.sidebar{width:58px;background:#0a0900;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:2px;position:fixed;left:0;top:0;bottom:0;z-index:200;}
+.s-logo{width:38px;height:38px;margin-bottom:14px;cursor:pointer;border-radius:6px;background:linear-gradient(135deg,#1a1a2e,#0a0900);border:1px solid rgba(255,196,0,.3);display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.s-logo:hover{transform:scale(1.08);border-color:rgba(255,196,0,.6);}
+.s-btn{width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--muted);font-size:17px;position:relative;border:none;background:none;font-family:inherit;}
+.s-btn:hover{background:var(--bg3);color:var(--text);}
+.s-btn.active{background:var(--gold);color:#0a0900;}
+.s-tip{position:absolute;left:46px;background:#1a170f;border:1px solid var(--border2);color:var(--text);font-size:11px;font-weight:700;padding:4px 9px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s;z-index:999;font-family:'Inter',sans-serif;letter-spacing:.3px;}
+.s-btn:hover .s-tip{opacity:1;}
+.adm-dot{position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--gold);border-radius:50%;display:none;}
+.s-div{width:24px;height:1px;background:var(--border);margin:5px 0;}
+.main{margin-left:58px;flex:1;display:flex;flex-direction:column;min-width:0;position:relative;z-index:1;}
+.topnav{background:#0a0900;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;height:46px;gap:1px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:100;}
+.topnav::-webkit-scrollbar{display:none;}
+.t-tab{display:flex;align-items:center;gap:5px;padding:4px 13px;cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;transition:all .12s;border:none;background:none;font-family:'Inter',sans-serif;letter-spacing:.3px;text-transform:uppercase;border-bottom:2px solid transparent;margin-bottom:-1px;height:46px;}
+.t-tab:hover{color:var(--text);}
+.t-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.content{padding:22px 28px;width:100%;max-width:1100px;margin:0 auto;}
+.server-bar{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-top:2px solid var(--gold);border-radius:8px;padding:13px 18px;margin-bottom:20px;}
+.srv-logo{width:40px;height:40px;flex-shrink:0;background:linear-gradient(135deg,#1a1a2e,#0a0900);border:1px solid rgba(255,196,0,.3);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.srv-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);line-height:1;}
+.srv-sub{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.srv-ip{margin-left:auto;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:6px 12px;flex-shrink:0;}
+.srv-ip-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;}
+.srv-ip-val{font-size:12px;font-weight:800;font-family:monospace;color:var(--gold);margin-top:1px;}
+.filterbar{margin-bottom:16px;}
+.srch-wrap{position:relative;}
+.srch{width:100%;max-width:340px;padding:9px 12px 9px 36px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:13px;font-weight:500;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
+.srch:focus{border-color:var(--gold2);}
+.srch::placeholder{color:var(--muted);}
+.srch-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
+.rk-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.rk-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--text);}
+.rk-count{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.rankings-table-wrap{border:1px solid var(--border);border-top:2px solid var(--border2);border-radius:8px;overflow:hidden;overflow-x:auto;background:var(--bg2);}
+.rankings-table{width:100%;border-collapse:collapse;min-width:480px;}
+.rankings-table thead th{padding:9px 14px;text-align:left;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap;}
+.rankings-table thead th.col-rank{width:48px;text-align:center;}
+.rankings-table thead th.col-player{min-width:150px;}
+.rankings-table thead th.col-cat{width:86px;text-align:center;}
+.col-cat-icon{font-size:13px;display:block;margin-bottom:1px;}
+.rankings-table tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .08s;}
+.rankings-table tbody tr:last-child{border-bottom:none;}
+.rankings-table tbody tr:hover{background:rgba(255,200,0,.025);}
+.rankings-table tbody td{padding:8px 14px;vertical-align:middle;}
+.rankings-table tbody td.col-rank,.rankings-table tbody td.col-cat{text-align:center;}
+.p-num{font-size:11px;font-weight:800;color:var(--muted);font-family:monospace;}
+.p-num.r1{color:var(--gold);}
+.p-num.r2{color:#b0b0b0;}
+.p-num.r3{color:#b06030;}
+.p-cell{display:flex;align-items:center;gap:9px;}
+.p-head{width:26px;height:26px;border-radius:3px;overflow:hidden;flex-shrink:0;image-rendering:pixelated;background:var(--bg4);}
+.p-head img,.p-head svg{display:block;width:100%;height:100%;}
+.p-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.1px;}
+.rank-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:900;border:1.5px solid;font-family:'Inter',sans-serif;white-space:nowrap;letter-spacing:.8px;text-transform:uppercase;}
+.cHT1{background:rgba(255,196,0,.12);border-color:var(--gold);color:var(--gold);text-shadow:0 0 8px rgba(255,196,0,.5);}
+.cHT2{background:rgba(230,168,0,.1);border-color:var(--gold2);color:var(--gold2);}
+.cHT3{background:rgba(200,120,0,.1);border-color:#c87800;color:#c87800;}
+.cHT4{background:rgba(160,80,0,.1);border-color:#a05000;color:#a05000;}
+.cHT5{background:rgba(110,50,0,.1);border-color:#703000;color:#903800;}
+.cLT1{background:rgba(157,80,255,.12);border-color:var(--purple);color:var(--purple);text-shadow:0 0 8px rgba(157,80,255,.4);}
+.cLT2{background:rgba(130,60,220,.1);border-color:#8040d8;color:#9050e8;}
+.cLT3{background:rgba(100,40,190,.1);border-color:#6428be;color:#7838d0;}
+.cLT4{background:rgba(75,25,160,.1);border-color:#4c199a;color:#6020b8;}
+.cLT5{background:rgba(50,15,120,.1);border-color:#340f78;color:#4c1898;}
+.cell-empty{color:var(--border);font-size:14px;display:block;text-align:center;letter-spacing:3px;}
+.admin-content{padding:22px 28px;max-width:1100px;width:100%;margin:0 auto;}
+.a-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.a-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--gold);}
+.a-rolelbl{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.a-inner-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.ait{padding:8px 16px;font-size:11px;font-weight:800;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;letter-spacing:.5px;text-transform:uppercase;}
+.ait:hover{color:var(--text);}
+.ait.active{color:var(--gold);border-bottom-color:var(--gold);}
+.a-tab-panel{display:none;}
+.a-tab-panel.active{display:block;}
+.a-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:22px;}
+.a-stat{background:var(--bg2);border:1px solid var(--border);border-top:2px solid transparent;border-radius:6px;padding:14px 16px;}
+.a-stat.c1{border-top-color:var(--gold);}.a-stat.c2{border-top-color:var(--red);}.a-stat.c3{border-top-color:var(--purple);}.a-stat.c4{border-top-color:var(--green);}
+.a-val{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;line-height:1;margin-bottom:2px;}
+.a-stat.c1 .a-val{color:var(--gold);}.a-stat.c2 .a-val{color:var(--red);}.a-stat.c3 .a-val{color:var(--purple);}.a-stat.c4 .a-val{color:var(--green);}
+.a-lbl{font-size:9px;color:var(--muted);font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.sec-ttl{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.pe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:8px;margin-bottom:20px;}
+.pe-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;transition:border-color .15s;}
+.pe-card:hover{border-color:var(--border2);}
+.pe-top{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.pe-hd{width:30px;height:30px;border-radius:3px;overflow:hidden;image-rendering:pixelated;flex-shrink:0;background:var(--bg4);}
+.pe-nm{font-size:13px;font-weight:800;letter-spacing:.2px;}
+.pe-sub{font-size:10px;color:var(--muted);font-weight:600;margin-top:1px;}
+.pe-ranks{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.pe-add{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;background:transparent;border:1px dashed rgba(255,196,0,.25);color:var(--gold2);font-size:10px;font-weight:800;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.3px;}
+.pe-add:hover{border-color:var(--gold);background:rgba(255,196,0,.05);}
+.chip-rm{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:900;border:1.5px solid;cursor:pointer;font-family:'Inter',sans-serif;transition:all .12s;white-space:nowrap;letter-spacing:.5px;}
+.chip-rm:hover{opacity:.6;transform:scale(.93);}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.tbl-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--bg3);}
+.tbl-t{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;color:var(--text);}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:8px 13px;text-align:left;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);background:var(--bg3);border-bottom:1px solid var(--border);}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .08s;}
+tbody tr:hover{background:rgba(255,200,0,.025);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:8px 13px;font-size:12px;vertical-align:middle;}
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;}
+.bg{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);}
+.br{background:rgba(232,64,64,.15);color:#e84040;border:1px solid rgba(232,64,64,.3);}
+.bb{background:rgba(157,80,255,.15);color:var(--purple);border:1px solid rgba(157,80,255,.3);}
+.bsa{background:rgba(255,196,0,.15);color:var(--gold);border:1px solid rgba(255,196,0,.3);}
+.pw-cell{font-family:monospace;font-size:11px;cursor:pointer;color:var(--muted);user-select:all;}
+.pw-cell:hover{color:var(--text);}
+.abtn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 9px;border-radius:4px;font-size:10px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;margin-right:3px;letter-spacing:.3px;text-transform:uppercase;}
+.abtn:hover{border-color:var(--border2);background:var(--bg4);}
+.abtn.d:hover{background:rgba(232,64,64,.1);border-color:var(--red);color:var(--red);}
+.abtn.or{background:rgba(255,196,0,.08);border-color:rgba(255,196,0,.3);color:var(--gold);}
+.abtn.or:hover{background:rgba(255,196,0,.15);}
+.rs-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:3px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid var(--border);background:var(--bg3);color:var(--muted);transition:all .12s;font-family:'Inter',sans-serif;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}
+.rs-chip:hover{border-color:var(--border2);color:var(--text);}
+.rs-on-HT1{background:rgba(255,196,0,.12);border-color:var(--gold);color:var(--gold);}
+.rs-on-HT2{background:rgba(230,168,0,.1);border-color:var(--gold2);color:var(--gold2);}
+.rs-on-HT3{background:rgba(200,120,0,.1);border-color:#c87800;color:#c87800;}
+.rs-on-HT4{background:rgba(160,80,0,.1);border-color:#a05000;color:#a05000;}
+.rs-on-HT5{background:rgba(110,50,0,.1);border-color:#703000;color:#903800;}
+.rs-on-LT1{background:rgba(157,80,255,.12);border-color:var(--purple);color:var(--purple);}
+.rs-on-LT2{background:rgba(130,60,220,.1);border-color:#8040d8;color:#9050e8;}
+.rs-on-LT3{background:rgba(100,40,190,.1);border-color:#6428be;color:#7838d0;}
+.rs-on-LT4{background:rgba(75,25,160,.1);border-color:#4c199a;color:#6020b8;}
+.rs-on-LT5{background:rgba(50,15,120,.1);border-color:#340f78;color:#4c1898;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(3px);z-index:500;align-items:center;justify-content:center;padding:16px;}
+.ov.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-top:2px solid var(--gold);border-radius:8px;padding:24px;width:380px;max-width:100%;position:relative;animation:mIn .18s ease;max-height:90vh;overflow-y:auto;}
+.modal.wide{width:500px;}
+@keyframes mIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.mx{position:absolute;top:10px;right:10px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .12s;}
+.mx:hover{color:var(--text);background:var(--bg4);}
+.m-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:2px;color:var(--gold);}
+.m-sub{font-size:11px;color:var(--muted);margin-bottom:16px;font-weight:500;}
+.flbl{display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.finp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:8px 10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .12s;margin-bottom:11px;font-weight:500;}
+.finp:focus{border-color:var(--gold2);}
+.finp::placeholder{color:var(--muted);}
+.errmsg{font-size:11px;color:var(--red);background:rgba(232,64,64,.08);border:1px solid rgba(232,64,64,.25);border-radius:4px;padding:6px 10px;margin-bottom:9px;display:none;font-weight:700;}
+.mbtn{width:100%;padding:9px;border:none;border-radius:5px;font-size:12px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase;}
+.mbtn-or{background:var(--gold);color:#0a0900;}
+.mbtn-or:hover{background:#ffd633;box-shadow:0 0 16px rgba(255,196,0,.3);}
+.skin-prev{width:48px;height:48px;border-radius:5px;overflow:hidden;background:var(--bg4);border:1px solid var(--border);flex-shrink:0;image-rendering:pixelated;display:flex;align-items:center;justify-content:center;}
+.settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px 18px;margin-bottom:10px;}
+.settings-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.settings-title{font-size:13px;font-weight:800;color:var(--text);letter-spacing:.2px;margin-bottom:3px;}
+.settings-desc{font-size:11px;color:var(--muted);font-weight:500;line-height:1.5;}
+.toggle-wrap{cursor:pointer;flex-shrink:0;padding:2px;}
+.toggle{width:42px;height:24px;border-radius:12px;background:var(--bg4);border:1px solid var(--border);position:relative;transition:all .2s;}
+.toggle::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .2s;}
+.toggle.on{background:rgba(255,196,0,.2);border-color:var(--gold);}
+.toggle.on::after{left:21px;background:var(--gold);}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;font-size:12px;font-weight:700;color:var(--text);z-index:9999;transform:translateY(60px);opacity:0;transition:all .22s ease;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.6);max-width:280px;font-family:'Inter',sans-serif;letter-spacing:.2px;}
+.toast.up{transform:translateY(0);opacity:1;}
+.toast.ok{border-left-color:var(--green);}
+.toast.err{border-left-color:var(--red);}
+.toast.info{border-left-color:var(--gold);}
+.panel{display:none;}.panel.active{display:block;}
+.discord-btn{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:5px;background:#5865F2;color:#fff;font-size:12px;font-weight:800;text-decoration:none;letter-spacing:.4px;transition:all .15s;border:1px solid rgba(255,255,255,.1);}
+.discord-btn:hover{background:#4752c4;box-shadow:0 0 16px rgba(88,101,242,.4);transform:translateY(-1px);}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:var(--gold3);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="s-logo" onclick="showPanel('rankings')" title="SkibidiTiers"><svg viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" width="38" height="38"><defs><linearGradient id="slg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffd700"/><stop offset="100%" style="stop-color:#b86800"/></linearGradient></defs><text x="19" y="27" text-anchor="middle" font-family="Teko,sans-serif" font-weight="700" font-size="22" fill="url(#slg)" letter-spacing="1">ST</text></svg></div>
+  <div class="s-div"></div>
+  <button class="s-btn active" id="btnRankings" onclick="showPanel('rankings')">&#127942;<span class="s-tip">Rankings</span></button>
+  <button class="s-btn" id="btnAdmin" onclick="adminClick()">&#9881;&#65039;<span class="s-tip">Admin</span><span class="adm-dot" id="admDot"></span></button>
+  <div class="s-div" style="margin-top:auto;"></div>
+  <button class="s-btn" id="btnUser" onclick="userBtnClick()">&#128100;<span class="s-tip" id="userTip">Login</span></button>
+</nav>
+
+<div class="main">
+  <div class="topnav" id="topnav"></div>
+
+  <div id="pRankings" class="panel active">
+    <div class="content">
+      <div class="server-bar">
+        <div class="srv-logo"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><defs><linearGradient id="ilg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#ffd700"/><stop offset="100%" style="stop-color:#b86800"/></linearGradient></defs><text x="20" y="29" text-anchor="middle" font-family="Teko,sans-serif" font-weight="700" font-size="24" fill="url(#ilg)" letter-spacing="2">ST</text></svg></div>
+        <div><div class="srv-name" id="srvName">SkibidiCraft Rankings</div><div class="srv-sub" id="srvSub">Offizielle Tier-Liste</div></div>
+        <div class="srv-ip"><div class="srv-ip-lbl">Server IP</div><div class="srv-ip-val" id="srvIP">skibidicraft.de</div></div>
+      </div>
+      <div id="discordBarWrap" style="display:none;margin-bottom:14px;">
+        <a href="https://discord.gg/4smHYsX6yK" target="_blank" class="discord-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.022.015.043.036.055a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          Discord beitreten
+        </a>
+      </div>
+      <div class="filterbar"><div class="srch-wrap"><span class="srch-icon">&#128269;</span><input class="srch" id="srchInput" type="text" placeholder="Spieler suchen…" oninput="filterQ=this.value;renderRankings()"></div></div>
+      <div class="rk-hdr"><span class="rk-title" id="tabTitle">Overall</span><span class="rk-count" id="pCount">– Spieler</span></div>
+      <div class="rankings-table-wrap"><table class="rankings-table"><thead id="rankHead"></thead><tbody id="rankBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="pAdmin" class="panel">
+    <div class="admin-content">
+      <div class="a-hdr">
+        <div><div class="a-title" id="aWelcome">Admin Panel</div><div class="a-rolelbl" id="aRoleLbl"></div></div>
+        <button class="abtn or" onclick="openM('addPlayer')">+ Spieler</button>
+      </div>
+      <div class="a-inner-tabs">
+        <button class="ait active" id="aitPlayers" onclick="switchATab('players')">Spieler &amp; Ränge</button>
+        <button class="ait" id="aitAccounts" onclick="switchATab('accounts')" style="display:none;">Accounts</button>
+        <button class="ait" id="aitLog" onclick="switchATab('log')" style="display:none;">Log</button>
+        <button class="ait" id="aitSettings" onclick="switchATab('settings')" style="display:none;">Einstellungen</button>
+      </div>
+      <div id="aTabPlayers" class="a-tab-panel active">
+        <div class="a-grid">
+          <div class="a-stat c1"><div class="a-val" id="stP">0</div><div class="a-lbl">Spieler</div></div>
+          <div class="a-stat c2"><div class="a-val" id="stCats">0</div><div class="a-lbl">Kategorien</div></div>
+          <div class="a-stat c3"><div class="a-val" id="stRanks">0</div><div class="a-lbl">Ränge</div></div>
+          <div class="a-stat c4"><div class="a-val">●</div><div class="a-lbl">Online</div></div>
+        </div>
+        <div class="sec-ttl">Kategorien</div>
+        <div id="catManager" style="margin-bottom:20px;"></div>
+        <div class="sec-ttl">Spieler bearbeiten</div>
+        <div class="pe-grid" id="peGrid"></div>
+        <div class="sec-ttl" style="margin-top:6px;">Alle Spieler</div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><span class="tbl-t">Spielerliste</span></div>
+          <table><thead><tr><th>Spieler</th><th>Ränge</th><th>Aktionen</th></tr></thead><tbody id="aTbl"></tbody></table>
+        </div>
+      </div>
+      <div id="aTabAccounts" class="a-tab-panel">
+        <div style="background:rgba(255,196,0,.05);border:1px solid rgba(255,196,0,.15);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:var(--muted);font-weight:600;">
+          <span style="color:var(--gold);font-weight:800;">SUPER-ADMIN ANSICHT</span> — Sub-Admins können Spieler/Ränge verwalten, aber keine Accounts erstellen.
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-head"><span class="tbl-t">Admin Accounts</span><button class="abtn or" onclick="openM('createAdmin')">+ Admin erstellen</button></div>
+          <table><thead><tr><th>Username</th><th>Passwort</th><th>2FA</th><th>Rolle</th><th>Erstellt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admTbl"></tbody></table>
+        </div>
+      </div>
+      <div id="aTabLog" class="a-tab-panel">
+        <div class="tbl-wrap">
+          <div class="tbl-head"><span class="tbl-t">Aktivitäts-Log</span><button class="abtn d" onclick="clearLog()">Leeren</button></div>
+          <table><thead><tr><th>Zeitpunkt</th><th>Admin</th><th>Aktion</th></tr></thead><tbody id="logTbl"></tbody></table>
+        </div>
+      </div>
+      <div id="aTabSettings" class="a-tab-panel">
+        <div class="sec-ttl" style="margin-bottom:16px;">Allgemeine Einstellungen</div>
+        <div class="settings-card">
+          <div class="settings-row"><div><div class="settings-title">🔗 Discord Button</div><div class="settings-desc">Zeigt einen Discord-Beitritts-Button auf der Rankings-Seite an.</div></div>
+          <div class="toggle-wrap" onclick="toggleSetting('discordBtn')"><div class="toggle" id="toggleDiscordBtn"></div></div></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-row"><div><div class="settings-title">🌐 Server IP</div><div class="settings-desc">Die angezeigte Server-IP.</div></div></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><input class="finp" id="setServerIP" style="margin:0;flex:1;" placeholder="z.B. skibidicraft.de"><button class="abtn or" onclick="saveSetting('serverIP',document.getElementById('setServerIP').value)">Speichern</button></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-row"><div><div class="settings-title">🏆 Server Name</div><div class="settings-desc">Der angezeigte Name in der Rankings-Ansicht.</div></div></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><input class="finp" id="setServerName" style="margin:0;flex:1;" placeholder="z.B. SkibidiCraft Rankings"><button class="abtn or" onclick="saveSetting('serverName',document.getElementById('setServerName').value)">Speichern</button></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-row"><div><div class="settings-title">💬 Willkommens-Text</div><div class="settings-desc">Kleiner Untertitel unter dem Server-Namen.</div></div></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;"><input class="finp" id="setSubtitle" style="margin:0;flex:1;" placeholder="z.B. Offizielle Tier-Liste"><button class="abtn or" onclick="saveSetting('subtitle',document.getElementById('setSubtitle').value)">Speichern</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Login -->
+<div class="ov" id="ovAdminLogin">
+  <div class="modal">
+    <button class="mx" onclick="closeM('adminLogin')">✕</button>
+    <div class="m-title">Admin Login</div>
+    <div class="m-sub">Nur für autorisiertes Personal.</div>
+    <label class="flbl">Username</label><input class="finp" id="aU" placeholder="Username">
+    <label class="flbl">Passwort</label>
+    <div style="position:relative;margin-bottom:11px;">
+      <input class="finp" id="aP" type="password" placeholder="Passwort" style="margin-bottom:0;padding-right:40px;">
+      <button type="button" onclick="togglePw('aP','eyeAP')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:2px;" id="eyeAP">👁</button>
+    </div>
+    <label class="flbl">2FA Code</label><input class="finp" id="a2" placeholder="Code" maxlength="10" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="errmsg" id="aErr"></div>
+    <button class="mbtn mbtn-or" onclick="doLogin()">Einloggen</button>
+  </div>
+</div>
+
+<!-- MODAL: Add Player -->
+<div class="ov" id="ovAddPlayer">
+  <div class="modal wide">
+    <button class="mx" onclick="closeM('addPlayer')">✕</button>
+    <div class="m-title">Spieler hinzufügen</div>
+    <div class="m-sub">Ränge sind optional.</div>
+    <label class="flbl">Minecraft Username</label>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+      <input class="finp" id="npN" placeholder="z.B. _GLX_Noah_" style="margin-bottom:0;flex:1;" oninput="previewSkin(this.value)">
+      <div class="skin-prev" id="skinPreview"><span style="font-size:18px;color:var(--muted);">?</span></div>
+    </div>
+    <label class="flbl">Ränge pro Kategorie (optional)</label>
+    <div id="rsAdd" style="max-height:320px;overflow-y:auto;"></div>
+    <button class="mbtn mbtn-or" style="margin-top:10px;" onclick="doAddPlayer()">Spieler hinzufügen</button>
+  </div>
+</div>
+
+<!-- MODAL: Edit Ranks -->
+<div class="ov" id="ovEditRanks">
+  <div class="modal wide">
+    <button class="mx" onclick="closeM('editRanks')">✕</button>
+    <div class="m-title">Ränge bearbeiten</div>
+    <div class="m-sub" id="editSubtitle" style="color:var(--gold);font-weight:800;font-size:13px;"></div>
+    <div id="rsEdit" style="max-height:380px;overflow-y:auto;"></div>
+    <button class="mbtn mbtn-or" style="margin-top:10px;" onclick="saveEditRanks()">Speichern</button>
+  </div>
+</div>
+
+<!-- MODAL: Create Admin -->
+<div class="ov" id="ovCreateAdmin">
+  <div class="modal">
+    <button class="mx" onclick="closeM('createAdmin')">✕</button>
+    <div class="m-title">Account erstellen</div>
+    <div class="m-sub">Neuen Admin-Account anlegen.</div>
+    <label class="flbl">Rolle</label>
+    <select class="finp" id="caRole"><option value="subadmin">Sub-Admin</option><option value="superadmin">Super-Admin</option></select>
+    <label class="flbl">Username</label><input class="finp" id="caU" placeholder="Username">
+    <label class="flbl">Passwort</label>
+    <div style="position:relative;margin-bottom:11px;">
+      <input class="finp" id="caP" type="password" placeholder="Passwort" style="margin-bottom:0;padding-right:40px;">
+      <button type="button" onclick="togglePw('caP','eyeCA')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:2px;" id="eyeCA">👁</button>
+    </div>
+    <label class="flbl">2FA Code</label><input class="finp" id="caC" placeholder="z.B. 445566" maxlength="10">
+    <div class="errmsg" id="caErr"></div>
+    <button class="mbtn mbtn-or" onclick="doCreateAdmin()">Account erstellen</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ══ RANG-REIHENFOLGE ══
+// lt5 < ht5 < lt4 < ht4 < lt3 < ht3 < lt2 < ht2 < lt1 < ht1
+const RANK_ORDER=['HT1','LT1','HT2','LT2','HT3','LT3','HT4','LT4','HT5','LT5'];
+const RANK_SCORE={};
+RANK_ORDER.forEach(function(r,i){RANK_SCORE[r]=i;});
+const NO_RANK_SCORE=999;
+const RANK_CFG={
+  HT1:{cls:'cHT1'},HT2:{cls:'cHT2'},HT3:{cls:'cHT3'},HT4:{cls:'cHT4'},HT5:{cls:'cHT5'},
+  LT1:{cls:'cLT1'},LT2:{cls:'cLT2'},LT3:{cls:'cLT3'},LT4:{cls:'cLT4'},LT5:{cls:'cLT5'},
+};
+const DEFAULT_CATS=[
+  {id:'overall',label:'Overall',icon:'🌐',isOverall:true},
+  {id:'sword',label:'Sword',icon:'⚔️'},{id:'axe',label:'Axe',icon:'🪓'},
+  {id:'uhc',label:'UHC',icon:'🍎'},{id:'smp',label:'SMP',icon:'🏠'},
+  {id:'pot',label:'Pot',icon:'🧪'},{id:'nethop',label:'NethPot',icon:'🔥'},
+];
+const DEFAULT_SETTINGS={discordBtn:false,serverIP:'skibidicraft.de',serverName:'SkibidiCraft Rankings',subtitle:'Offizielle Tier-Liste'};
+
+// ══ STATE ══
+let me=null, token=sessionStorage.getItem('st_token')||null;
+let players=[], cats=null, settings={}, admins=[], log=[];
+let filterQ='', curCat='overall', editingPlayerId=null, selAdd={}, selEdit={};
+
+function cap(s){return s[0].toUpperCase()+s.slice(1);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function getCats(){return cats||DEFAULT_CATS;}
+function getSettings(){return Object.assign({},DEFAULT_SETTINGS,settings);}
+
+// ══ API ══
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(token)opts.headers['Authorization']='Bearer '+token;
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch('/api'+path,opts);
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'Fehler');
+  return d;
+}
+
+// ══ INIT ══
+async function init(){
+  try{
+    const d=await api('GET','/data');
+    players=d.players||[];
+    if(d.cats)cats=d.cats;
+    settings=d.settings||{};
+  }catch(e){}
+  // Session prüfen
+  if(token){
+    try{
+      const m=await api('GET','/me');
+      me={name:m.name,role:m.role};
+      updateUserBtn();
+    }catch(e){token=null;sessionStorage.removeItem('st_token');}
+  }
+  applySettings();
+  buildTabs();
+  renderRankings();
+}
+
+// ══ SKIN ══
+function mkHead(name,size){
+  size=size||26;
+  var sid='sk'+Math.random().toString(36).slice(2,8);
+  setTimeout(function(){loadSkin(sid,name,size);},10);
+  return '<span id="'+sid+'" style="display:inline-block;width:'+size+'px;height:'+size+'px;border-radius:3px;overflow:hidden;flex-shrink:0;background:var(--bg4);">'+mkFallback(name,size)+'</span>';
+}
+function mkFallback(name,size){
+  var h=0;for(var i=0;i<name.length;i++){h=((h<<5)-h)+name.charCodeAt(i);h|=0;}
+  var sk=['#f87c5a','#78c95a','#5ac9e0','#c95a78','#c9a85a','#8a5ac9','#e09060','#70b870','#60a8c0','#c06080'][Math.abs(h)%10];
+  var hr=['#2a1a0a','#1a1a2e','#3a2a10','#1a2a1a','#2a2a2a','#3a1a0a','#0a1a0a','#1a2a3a','#2a1a2a','#1a1a1a'][Math.abs(h>>3)%10];
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="8" height="8" fill="'+sk+'"/><rect x="0" y="0" width="8" height="3" fill="'+hr+'"/><rect x="2" y="3" width="1" height="1" fill="#222"/><rect x="5" y="3" width="1" height="1" fill="#222"/><rect x="3" y="5" width="2" height="1" fill="#c07060"/></svg>';
+}
+function loadSkin(sid,name,size){
+  var el=document.getElementById(sid);if(!el||!name)return;
+  var img=new Image();img.crossOrigin='anonymous';
+  img.style.cssText='display:block;image-rendering:pixelated;width:'+size+'px;height:'+size+'px;';
+  img.onload=function(){var e=document.getElementById(sid);if(e){e.innerHTML='';e.appendChild(img);}};
+  img.onerror=function(){var i2=new Image();i2.style.cssText=img.style.cssText;i2.onload=function(){var e=document.getElementById(sid);if(e){e.innerHTML='';e.appendChild(i2);}};i2.src='https://mc-heads.net/avatar/'+encodeURIComponent(name)+'/'+size;};
+  img.src='https://crafatar.com/avatars/'+encodeURIComponent(name)+'?size='+size+'&overlay=true&default=MHF_Steve';
+}
+var skinT;
+function previewSkin(name){
+  clearTimeout(skinT);var el=document.getElementById('skinPreview');if(!el)return;
+  if(!name){el.innerHTML='<span style="font-size:20px;color:var(--muted);">?</span>';return;}
+  el.innerHTML='<span style="font-size:18px;">⏳</span>';
+  skinT=setTimeout(function(){
+    var img=new Image();img.style.cssText='display:block;image-rendering:pixelated;width:48px;height:48px;border-radius:4px;';
+    img.onload=function(){el.innerHTML='';el.appendChild(img);};
+    img.onerror=function(){var i2=new Image();i2.style.cssText=img.style.cssText;i2.onload=function(){el.innerHTML='';el.appendChild(i2);};i2.onerror=function(){el.innerHTML='<span style="font-size:18px;">❓</span>';};i2.src='https://mc-heads.net/avatar/'+encodeURIComponent(name)+'/48';};
+    img.src='https://crafatar.com/avatars/'+encodeURIComponent(name)+'?size=48&overlay=true&default=MHF_Steve';
+  },400);
+}
+
+// ══ TABS ══
+function buildTabs(){
+  var cs=getCats();
+  document.getElementById('topnav').innerHTML=cs.map(function(c){
+    return '<button class="t-tab'+(c.id===curCat?' active':'')+'" onclick="switchTab(this,\''+c.id+'\')">'+c.icon+' '+c.label+'</button>';
+  }).join('');
+}
+function switchTab(el,id){
+  document.querySelectorAll('.t-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');curCat=id;
+  var c=getCats().find(function(x){return x.id===id;});
+  document.getElementById('tabTitle').textContent=c?c.label:id;
+  filterQ='';document.getElementById('srchInput').value='';
+  renderRankings();
+}
+function switchATab(id){
+  ['players','accounts','log','settings'].forEach(function(t){
+    var p=document.getElementById('aTab'+cap(t));
+    var b=document.getElementById('ait'+cap(t));
+    if(p)p.classList.toggle('active',t===id);
+    if(b)b.classList.toggle('active',t===id);
+  });
+}
+
+// ══ SORTIERUNG ══
+function getRankScore(r){if(!r||r==='')return NO_RANK_SCORE;var s=RANK_SCORE[r];return s!==undefined?s:NO_RANK_SCORE;}
+function getFilledCount(p,cs){var n=0;cs.forEach(function(c){var r=p.ranks&&p.ranks[c.id];if(r&&RANK_SCORE[r]!==undefined)n++;});return n;}
+function getOverallScore(p,cs){var t=0;cs.forEach(function(c){t+=getRankScore(p.ranks&&p.ranks[c.id]);});return t;}
+
+// ══ RANKINGS ══
+function renderRankings(){
+  var cs=getCats(),isOv=curCat==='overall';
+  var nonOv=cs.filter(function(c){return !c.isOverall;});
+  var ps=players.filter(function(p){return !filterQ||p.name.toLowerCase().includes(filterQ.toLowerCase());});
+
+  if(isOv){
+    ps.sort(function(a,b){
+      var fa=getFilledCount(a,nonOv),fb=getFilledCount(b,nonOv);
+      if(fa===0&&fb===0)return a.name.localeCompare(b.name);
+      if(fa===0)return 1;if(fb===0)return -1;
+      var sa=getOverallScore(a,nonOv),sb=getOverallScore(b,nonOv);
+      if(sa!==sb)return sa-sb;
+      if(fb!==fa)return fb-fa;
+      return a.name.localeCompare(b.name);
+    });
+  } else {
+    ps.sort(function(a,b){
+      var ra=getRankScore(a.ranks&&a.ranks[curCat]),rb=getRankScore(b.ranks&&b.ranks[curCat]);
+      if(ra!==rb)return ra-rb;return a.name.localeCompare(b.name);
+    });
+  }
+
+  document.getElementById('pCount').textContent=ps.length+' Spieler';
+  var headCols=isOv?nonOv.map(function(c){return '<th class="col-cat"><span class="col-cat-icon">'+c.icon+'</span>'+c.label+'</th>';}).join(''):'<th class="col-cat" style="min-width:120px;">Rang</th>';
+  document.getElementById('rankHead').innerHTML='<tr><th class="col-rank">#</th><th class="col-player">Spieler</th>'+headCols+'</tr>';
+  var body=document.getElementById('rankBody');
+  if(!ps.length){body.innerHTML='<tr><td colspan="'+(isOv?nonOv.length+2:3)+'" style="text-align:center;padding:48px;color:var(--border);font-size:22px;letter-spacing:6px;font-family:monospace;">— — — — — — —</td></tr>';return;}
+  var rc=0;
+  body.innerHTML=ps.map(function(p){
+    var hr=isOv?getFilledCount(p,nonOv)>0:getRankScore(p.ranks&&p.ranks[curCat])<NO_RANK_SCORE;
+    if(hr)rc++;
+    var rn=hr?rc:'—',cls=rn===1?'r1':rn===2?'r2':rn===3?'r3':'';
+    var cells;
+    if(isOv){cells=nonOv.map(function(c){var rid=p.ranks&&p.ranks[c.id];return rid&&RANK_CFG[rid]?'<td class="col-cat"><span class="rank-chip '+RANK_CFG[rid].cls+'">'+rid+'</span></td>':'<td class="col-cat"><span class="cell-empty">—</span></td>';}).join('');}
+    else{var rid=p.ranks&&p.ranks[curCat];cells=rid&&RANK_CFG[rid]?'<td class="col-cat"><span class="rank-chip '+RANK_CFG[rid].cls+'" style="font-size:13px;padding:4px 12px;">'+rid+'</span></td>':'<td class="col-cat"><span class="cell-empty">—</span></td>';}
+    var nd=rn==='—'?'<span class="p-num" style="color:var(--border);">—</span>':'<span class="p-num '+cls+'">#'+rn+'</span>';
+    return '<tr><td class="col-rank">'+nd+'</td><td><div class="p-cell"><div class="p-head">'+mkHead(p.name,26)+'</div><span class="p-name">🇪🇺 '+esc(p.name)+'</span></div></td>'+cells+'</tr>';
+  }).join('');
+}
+
+// ══ PANELS ══
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.s-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('p'+cap(id)).classList.add('active');
+  var btn=document.getElementById('btn'+cap(id));if(btn)btn.classList.add('active');
+  if(id==='admin')renderAdmin();
+}
+function adminClick(){if(me)showPanel('admin');else openM('adminLogin');}
+function userBtnClick(){if(me)doLogout();else openM('adminLogin');}
+
+// ══ MODALS ══
+function openM(id){
+  document.getElementById('ov'+cap(id)).classList.add('open');
+  if(id==='addPlayer'){selAdd={};buildRsGrid('rsAdd',selAdd,'add');}
+}
+function closeM(id){
+  document.getElementById('ov'+cap(id)).classList.remove('open');
+  if(id==='addPlayer'){var sp=document.getElementById('skinPreview');if(sp)sp.innerHTML='<span style="font-size:20px;color:var(--muted);">?</span>';}
+}
+document.querySelectorAll('.ov').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open');});});
+
+function buildRsGrid(cid,selObj,mode){
+  var cs=getCats().filter(function(c){return !c.isOverall;});
+  document.getElementById(cid).innerHTML=cs.map(function(cat){
+    var cur=selObj[cat.id]||'';
+    var chips=RANK_ORDER.map(function(rid){var on=cur===rid?' rs-on-'+rid:'';return '<span class="rs-chip'+on+'" onclick="toggleRs(\''+cat.id+'\',\''+rid+'\',\''+mode+'\')">'+rid+'</span>';}).join('');
+    return '<div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">'+cat.icon+' '+cat.label+'</div><div style="display:flex;flex-wrap:wrap;gap:5px;">'+chips+'</div></div>';
+  }).join('');
+}
+function toggleRs(catId,rankId,mode){
+  var obj=mode==='add'?selAdd:selEdit;
+  if(obj[catId]===rankId)delete obj[catId];else obj[catId]=rankId;
+  buildRsGrid(mode==='add'?'rsAdd':'rsEdit',obj,mode);
+}
+function togglePw(inp,btn){var el=document.getElementById(inp);if(!el)return;el.type=el.type==='password'?'text':'password';}
+
+// ══ AUTH ══
+async function doLogin(){
+  document.getElementById('aErr').style.display='none';
+  var u=document.getElementById('aU').value.trim();
+  var p=document.getElementById('aP').value;
+  var c=document.getElementById('a2').value.trim();
+  try{
+    var r=await api('POST','/login',{username:u,password:p,code:c});
+    token=r.token;sessionStorage.setItem('st_token',token);
+    me={name:r.name,role:r.role};
+    updateUserBtn();
+    document.getElementById('admDot').style.display='block';
+    closeM('adminLogin');
+    showPanel('admin');
+    toast('⚡ Willkommen, '+esc(me.name)+'!','info');
+  }catch(e){
+    var err=document.getElementById('aErr');err.style.display='block';err.textContent='❌ '+e.message;
+  }
+}
+async function doLogout(){
+  try{await api('POST','/logout');}catch(e){}
+  token=null;me=null;sessionStorage.removeItem('st_token');
+  document.getElementById('admDot').style.display='none';
+  var b=document.getElementById('btnUser');
+  b.innerHTML='👤<span class="s-tip">Login</span>';
+  b.style.cssText='';
+  showPanel('rankings');
+  toast('👋 Ausgeloggt','info');
+}
+function updateUserBtn(){
+  if(!me)return;
+  var isSA=me.role==='superadmin';
+  var b=document.getElementById('btnUser');
+  b.innerHTML=(isSA?'👑':'⚙️')+'<span class="s-tip">'+(isSA?'Super: ':'')+esc(me.name)+' (logout)</span>';
+  document.getElementById('admDot').style.display='block';
+}
+
+// ══ ADMIN RENDER ══
+async function renderAdmin(){
+  if(!me)return;
+  var isSA=me.role==='superadmin';
+  document.getElementById('aWelcome').textContent=(isSA?'👑':'⚙️')+' '+me.name;
+  document.getElementById('aRoleLbl').textContent=isSA?'Super-Admin · Vollzugriff':'Sub-Admin · Spieler & Ränge';
+  document.getElementById('aitAccounts').style.display=isSA?'':'none';
+  document.getElementById('aitLog').style.display=isSA?'':'none';
+  document.getElementById('aitSettings').style.display=isSA?'':'none';
+
+  try{
+    var d=await api('GET','/admin/data');
+    players=d.players||[];if(d.cats)cats=d.cats;settings=d.settings||{};
+    admins=d.admins||[];log=d.log||[];
+  }catch(e){toast('❌ Fehler beim Laden','err');return;}
+
+  renderRankings();
+  applySettings();
+  renderSettingsInputs();
+
+  var cs=getCats();
+  var totalRanks=players.reduce(function(a,p){return a+Object.values(p.ranks||{}).filter(Boolean).length;},0);
+  document.getElementById('stP').textContent=players.length;
+  document.getElementById('stCats').textContent=cs.length;
+  document.getElementById('stRanks').textContent=totalRanks;
+
+  // Category manager
+  var nonOv=cs.filter(function(c){return !c.isOverall;});
+  document.getElementById('catManager').innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">'+
+    cs.map(function(c){
+      var isOv=c.isOverall||c.id==='overall';
+      return '<div style="display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid '+(isOv?'rgba(255,196,0,.3)':'var(--border)')+';border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;">'+
+        c.icon+' '+c.label+(isOv?' <span style="font-size:9px;color:var(--gold);">AUTO</span>':'')+
+        (isSA&&!isOv?'<span onclick="delCat(\''+c.id+'\')" style="cursor:pointer;color:var(--muted);font-size:10px;">✕</span>':'')+
+      '</div>';
+    }).join('')+
+    (isSA?'<button class="abtn or" onclick="addCatPrompt()">+ Kategorie</button>':'')+
+  '</div>';
+
+  // Player cards
+  document.getElementById('peGrid').innerHTML=players.map(function(p){
+    var chips=Object.entries(p.ranks||{}).filter(function(e){return e[1]&&e[0]!=='overall';}).map(function(e){
+      var cid=e[0],rid=e[1],cls=RANK_CFG[rid]?RANK_CFG[rid].cls:'';
+      var cat=cs.find(function(c){return c.id===cid;});
+      return '<span class="chip-rm '+cls+'" onclick="removeRank('+p.id+',\''+cid+'\')">'+rid+' <span style="opacity:.4;font-size:9px;">('+esc(cat?cat.label:cid)+')</span><span style="opacity:.5;font-size:9px;margin-left:2px;">✕</span></span>';
+    }).join('');
+    return '<div class="pe-card"><div class="pe-top"><div class="pe-hd">'+mkHead(p.name,32)+'</div><div><div class="pe-nm">🇪🇺 '+esc(p.name)+'</div><div class="pe-sub">'+Object.values(p.ranks||{}).filter(Boolean).length+' Ränge</div></div></div>'+
+      '<div class="pe-ranks">'+(chips||'<span style="color:var(--muted);font-size:11px;">Keine Ränge</span>')+'<span class="pe-add" onclick="openEditRanks('+p.id+')">＋ Bearbeiten</span></div></div>';
+  }).join('');
+
+  // Players table
+  document.getElementById('aTbl').innerHTML=players.map(function(p){
+    var count=Object.values(p.ranks||{}).filter(Boolean).length;
+    return '<tr><td><div style="display:flex;align-items:center;gap:7px;">'+mkHead(p.name,24)+'<span style="font-weight:700;">🇪🇺 '+esc(p.name)+'</span></div></td><td><span style="color:var(--gold);font-weight:700;">'+count+'</span></td><td><button class="abtn" onclick="openEditRanks('+p.id+')">✏️ Ränge</button><button class="abtn d" onclick="delPlayer('+p.id+')">🗑️</button></td></tr>';
+  }).join('');
+
+  // Accounts & Log (nur Super-Admin)
+  if(isSA){
+    document.getElementById('admTbl').innerHTML=admins.map(function(a){
+      return '<tr><td style="font-weight:700;">⚙️ '+esc(a.name)+'</td><td><span class="pw-cell" onclick="copyTxt(\''+a.pass.replace(/'/g,"\\'")+'\')" title="Klicken zum Kopieren">'+esc(a.pass)+'</span></td><td><span class="pw-cell" onclick="copyTxt(\''+a.code+'\')">'+a.code+'</span></td><td><span class="bdg '+(a.role==='superadmin'?'bsa':'bb')+'">'+(a.role==='superadmin'?'SUPER-ADMIN':'SUB-ADMIN')+'</span></td><td style="color:var(--muted);font-size:11px;">'+a.created+'</td><td><span class="bdg '+(a.active?'bg':'br')+'">'+(a.active?'AKTIV':'DEAKTIVIERT')+'</span></td><td><button class="abtn" onclick="toggleAdmin('+a.id+')">'+(a.active?'🔒':'🔓')+'</button><button class="abtn d" onclick="delAdmin('+a.id+')">🗑️</button></td></tr>';
+    }).join('');
+    document.getElementById('logTbl').innerHTML=log.length
+      ?log.map(function(l){return '<tr><td style="color:var(--muted);font-family:monospace;font-size:11px;white-space:nowrap;">'+l.t+'</td><td style="color:var(--gold);font-weight:700;font-size:11px;">'+esc(l.who)+'</td><td style="font-size:11px;">'+esc(l.action)+'</td></tr>';}).join('')
+      :'<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--muted);">Noch keine Aktivitäten.</td></tr>';
+  }
+}
+
+// ══ PLAYER ACTIONS ══
+async function doAddPlayer(){
+  var name=document.getElementById('npN').value.trim();
+  if(!name)return toast('⚠️ Name eingeben!','err');
+  var cs=getCats(),ranks={};
+  cs.filter(function(c){return !c.isOverall;}).forEach(function(c){ranks[c.id]=selAdd[c.id]||'';});
+  try{
+    var p=await api('POST','/players',{name,ranks});
+    players.push(p);selAdd={};
+    closeM('addPlayer');document.getElementById('npN').value='';
+    renderAdmin();renderRankings();toast('✅ '+name+' hinzugefügt!','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+async function delPlayer(id){
+  try{
+    await api('DELETE','/players/'+id);
+    players=players.filter(function(p){return p.id!==id;});
+    renderAdmin();renderRankings();toast('🗑️ Spieler entfernt','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+async function removeRank(pid,catId){
+  var p=players.find(function(x){return x.id===pid;});if(!p)return;
+  var ranks=Object.assign({},p.ranks);ranks[catId]='';
+  try{
+    await api('PUT','/players/'+pid+'/ranks',{ranks});
+    p.ranks=ranks;renderAdmin();renderRankings();toast('✏️ Rang entfernt','info');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+function openEditRanks(id){
+  editingPlayerId=id;
+  var p=players.find(function(x){return x.id===id;});if(!p)return;
+  selEdit=Object.assign({},p.ranks||{});
+  Object.keys(selEdit).forEach(function(k){if(!selEdit[k])delete selEdit[k];});
+  document.getElementById('editSubtitle').textContent='🇪🇺 '+p.name;
+  buildRsGrid('rsEdit',selEdit,'edit');
+  openM('editRanks');
+}
+async function saveEditRanks(){
+  if(!editingPlayerId)return;
+  var p=players.find(function(x){return x.id===editingPlayerId;});if(!p)return;
+  var ranks=Object.assign({},p.ranks||{});
+  getCats().filter(function(c){return !c.isOverall;}).forEach(function(c){ranks[c.id]=selEdit[c.id]||'';});
+  try{
+    await api('PUT','/players/'+editingPlayerId+'/ranks',{ranks});
+    p.ranks=ranks;closeM('editRanks');
+    renderAdmin();renderRankings();toast('✅ Ränge gespeichert!','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+
+// ══ CATEGORY ACTIONS ══
+async function addCatPrompt(){
+  var label=prompt('Kategorie-Name:');if(!label||!label.trim())return;
+  var icon=prompt('Emoji Icon:','🎮');
+  var id=label.trim().toLowerCase().replace(/\s+/g,'_');
+  if(id==='overall')return toast('⚠️ "overall" reserviert!','err');
+  var cs=getCats();
+  if(cs.find(function(c){return c.id===id;}))return toast('⚠️ Existiert bereits!','err');
+  cs.push({id,label:label.trim(),icon:icon||'🎮'});
+  try{
+    await api('PUT','/cats',{cats:cs});cats=cs;
+    players.forEach(function(p){if(!p.ranks)p.ranks={};if(!p.ranks[id])p.ranks[id]='';});
+    buildTabs();renderAdmin();toast('✅ Kategorie hinzugefügt!','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+async function delCat(id){
+  if(id==='overall')return toast('Overall kann nicht gelöscht werden!','err');
+  if(!confirm('Kategorie "'+id+'" wirklich löschen?'))return;
+  var cs=getCats().filter(function(c){return c.id!==id;});
+  try{
+    await api('PUT','/cats',{cats:cs});cats=cs;
+    if(curCat===id)curCat=cs[0]?cs[0].id:'overall';
+    buildTabs();renderAdmin();toast('🗑️ Kategorie entfernt','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+
+// ══ ADMIN ACCOUNT ACTIONS ══
+async function doCreateAdmin(){
+  document.getElementById('caErr').style.display='none';
+  var u=document.getElementById('caU').value.trim();
+  var p=document.getElementById('caP').value.trim();
+  var c=document.getElementById('caC').value.trim();
+  var role=document.getElementById('caRole').value;
+  if(!u||!p||!c){var e=document.getElementById('caErr');e.style.display='block';e.textContent='Alle Felder ausfüllen.';return;}
+  try{
+    var a=await api('POST','/admins',{name:u,pass:p,code:c,role});
+    admins.push(a);closeM('createAdmin');
+    ['caU','caP','caC'].forEach(function(id){document.getElementById(id).value='';});
+    renderAdmin();switchATab('accounts');toast('✅ Admin "'+u+'" erstellt!','ok');
+  }catch(e){var er=document.getElementById('caErr');er.style.display='block';er.textContent='❌ '+e.message;}
+}
+async function toggleAdmin(id){
+  try{var a=await api('PUT','/admins/'+id+'/toggle');var idx=admins.findIndex(function(x){return x.id===id;});if(idx>=0)admins[idx]=a;renderAdmin();toast(a.active?'🔓 Aktiviert':'🔒 Deaktiviert',a.active?'ok':'err');}catch(e){toast('❌ '+e.message,'err');}
+}
+async function delAdmin(id){
+  try{await api('DELETE','/admins/'+id);admins=admins.filter(function(x){return x.id!==id;});renderAdmin();toast('🗑️ Admin entfernt','ok');}catch(e){toast('❌ '+e.message,'err');}
+}
+async function clearLog(){
+  try{await api('DELETE','/log');log=[];renderAdmin();toast('🗑️ Log geleert','ok');}catch(e){toast('❌ '+e.message,'err');}
+}
+function copyTxt(txt){navigator.clipboard.writeText(txt).then(function(){toast('📋 Kopiert!','info');}).catch(function(){});}
+
+// ══ SETTINGS ══
+async function saveSetting(key,val){
+  try{
+    await api('PUT','/settings',{[key]:val});
+    settings[key]=val;applySettings();renderSettingsInputs();toast('✅ Gespeichert!','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+}
+async function toggleSetting(key){
+  var s=getSettings();await saveSetting(key,!s[key]);
+}
+function applySettings(){
+  var s=getSettings();
+  var dw=document.getElementById('discordBarWrap');if(dw)dw.style.display=s.discordBtn?'block':'none';
+  var nn=document.getElementById('srvName');if(nn)nn.textContent=s.serverName||'SkibidiCraft Rankings';
+  var ss=document.getElementById('srvSub');if(ss)ss.textContent=s.subtitle||'Offizielle Tier-Liste';
+  var si=document.getElementById('srvIP');if(si)si.textContent=s.serverIP||'skibidicraft.de';
+}
+function renderSettingsInputs(){
+  var s=getSettings();
+  var td=document.getElementById('toggleDiscordBtn');if(td)td.className='toggle'+(s.discordBtn?' on':'');
+  var ip=document.getElementById('setServerIP');if(ip)ip.value=s.serverIP||'';
+  var nm=document.getElementById('setServerName');if(nm)nm.value=s.serverName||'';
+  var st=document.getElementById('setSubtitle');if(st)st.value=s.subtitle||'';
+}
+
+// ══ TOAST ══
+var tT;
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  el.className='toast '+(type||'ok')+' up';
+  clearTimeout(tT);tT=setTimeout(function(){el.classList.remove('up');},3000);
+}
+
+init();
+</script>
+</body>
+</html>
